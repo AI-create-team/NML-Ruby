@@ -31,6 +31,11 @@ end
 post '/html' do
 
   body = request.body.read
+
+  if body.match(/^zxcv=/) then
+    body = body[5,body.length]
+  end
+
   spstr = body.split("\n")
 
   s = String.new
