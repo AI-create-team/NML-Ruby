@@ -28,6 +28,30 @@ post '/' do
 
 end
 
+post '/html' do
+
+  body = request.body.read
+  spstr = body.split("\n")
+
+  s = String.new
+
+  spstr.each do |line|
+    line = checkSpace(line)
+    line = checkRuby(line)
+    line = checkReturn(line)
+    line = checkNewPage(line)
+
+    line << "\n"
+
+    s << line
+  end
+
+  s = "<html lang=\"ja\"><head><title>NNML</title></head><body><div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div></body></html>"
+
+  return s
+
+end
+
 def checkSpace(line)
   if line.match(/^[ \s]/) then
     line = "<p>" + line + "</p>"
