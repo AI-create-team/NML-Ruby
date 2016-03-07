@@ -16,11 +16,16 @@ post '/' do
 
   spstr.each do |line|
     line = checkSpace(line)
-    checkRuby(line)
+    line = checkRuby(line)
+    line = checkReturn(line)
+
     line << "\n"
 
     s << line
   end
+
+  s = "<div>\n" + s + "\n</div>"
+
 
   return s[0,s.length - 1]
 
@@ -34,9 +39,7 @@ def checkSpace(line)
 end
 
 def checkRuby(line)
-
   s = line.force_encoding("UTF-8").scan(/[\|｜].*?[\(（].*?[\)）]/)
-
   s.each do |text|
     moji = text[/[\|｜].*?[\(（]/]
     moji = moji[1,moji.length-2]
@@ -48,7 +51,12 @@ def checkRuby(line)
 
     line.sub!(text, s)
   end
-
   return line
+end
 
+def checkReturn(line)
+  if line == "" then
+    line = "</div>\n<div>"
+  end
+  return line
 end
