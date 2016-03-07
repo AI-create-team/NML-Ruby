@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'uri'
 if development?
   require 'sinatra/reloader'
   Sinatra.register Sinatra::Reloader
@@ -31,6 +32,7 @@ end
 post '/html' do
 
   body = request.body.read
+  body = URI.unescape(body)
 
   if body.match(/^zxcv=/) then
     body = body[5,body.length]
