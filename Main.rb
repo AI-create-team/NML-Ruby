@@ -1,6 +1,3 @@
-
-require 'bundler/setup'
-Bundler.require
 require 'sinatra'
 if development?
   require 'sinatra/reloader'
@@ -18,16 +15,16 @@ post '/' do
     line = checkSpace(line)
     line = checkRuby(line)
     line = checkReturn(line)
+    line = checkNewPage(line)
 
     line << "\n"
 
     s << line
   end
 
-  s = "<div>\n" + s + "\n</div>"
+  s = "<div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div>"
 
-
-  return s[0,s.length - 1]
+  return s
 
 end
 
@@ -49,7 +46,7 @@ def checkRuby(line)
 
     s = "<ruby>" + moji + "<rt>" + ruby + "</rt></ruby>"
 
-    line.sub!(text, s)
+    line.gsub!(text, s)
   end
   return line
 end
@@ -57,6 +54,13 @@ end
 def checkReturn(line)
   if line == "" then
     line = "</div>\n<div>"
+  end
+  return line
+end
+
+def checkNewPage(line)
+  if line.force_encoding("UTF-8").match(/^[-ー=＝]{3,}$/) then
+    line = "\n</div>\n</div>\n<div class=\"page\">\n<div>\n"
   end
   return line
 end
