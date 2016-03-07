@@ -8,6 +8,25 @@ end
 
 post '/' do
 
-  p request.body.read.split("\n")
+  body = request.body.read
+  spstr = body.split("\n")
 
+  s = String.new
+
+  spstr.each do |youso|
+    youso = checkSpace(youso)
+    youso << "\n"
+
+    s << youso
+  end
+
+  return s[0,s.length - 1]
+
+end
+
+def checkSpace(youso)
+  if youso.match(/^[ \s]/) then
+    youso = "<p>" + youso + "</p>"
+  end
+  return youso
 end
