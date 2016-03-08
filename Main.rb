@@ -129,7 +129,7 @@ end
 
 #斜体
 def checkItalic(line)
-  s = line.force_encoding("UTF-8").scan(/[\_＿]{1}.*?[\_＿]{1}/)
+  s = line.force_encoding("UTF-8").scan(/[\_＿*＊]{1}.*?[\_＿*＊]{1}/)
   s.each do |text|
     if text != "__"
       ss = "<i>#{text[1,text.length - 2]}</i>"
@@ -142,7 +142,7 @@ end
 
 #太字
 def checkBold(line)
-  s = line.force_encoding("UTF-8").scan(/[\_＿]{2}.*?[\_＿]{2}/)
+  s = line.force_encoding("UTF-8").scan(/[\_＿*＊]{2}.*?[\_＿*＊]{2}/)
   s.each do |text|
     line.gsub!(text, "<b>#{text[2,text.length - 4]}</b>")
   end
