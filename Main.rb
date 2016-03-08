@@ -157,19 +157,35 @@ end
 
 #リンク
 def checkLink(line)
-  s = line.force_encoding("UTF-8").scan(/\[.*?\][\(（].*?[\)）]/)
+  s = line.force_encoding("UTF-8").scan(/[!！]*\[.*?\][\(（].*?[\)）]/)
   s.each do |text|
-    if text.match(/\".*\"/) then
-      #""に該当
-      linkText = line.match(/\[.*?\]/).to_s
-      url = line.match(/[\(（].*?[\"]/).to_s
-      name = line.match(/[\"].*?[\"]/).to_s
-      line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\" title=\"#{name[1,name.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
-    else
-      linkText = line.match(/\[.*?\]/).to_s
-      url = line.match(/[\(（].*?[\)）]/).to_s
-      line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
+
+    if text.match(/[!！]{1,}\[.*?\][\(（].*?[\)）]/) then
+      if text.match(/\".*\"/) then
+        #""に該当
+        linkText = line.match(/\[.*?\]/).to_s
+        url = line.match(/[\(（].*?[\"]/).to_s
+        name = line.match(/[\"].*?[\"]/).to_s
+        line.gsub!(text, "<img src=\"#{url[1,url.length-2]}\" alt=\"#{linkText[1,linkText.length-2]}\" title=\"#{name[1,name.length-2]}\">")
+      else
+        linkText = line.match(/\[.*?\]/).to_s
+        url = line.match(/[\(（].*?[\)）]/).to_s
+        line.gsub!(text, "<img src=\"#{url[1,url.length-2]}\" alt=\"#{linkText[1,linkText.length-2]}\" >")
+      end
+    else#画像じゃないければ
+      if text.match(/\".*\"/) then
+        #""に該当
+        linkText = line.match(/\[.*?\]/).to_s
+        url = line.match(/[\(（].*?[\"]/).to_s
+        name = line.match(/[\"].*?[\"]/).to_s
+        line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\" title=\"#{name[1,name.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
+      else
+        linkText = line.match(/\[.*?\]/).to_s
+        url = line.match(/[\(（].*?[\)）]/).to_s
+        line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
+      end
     end
+
   end
   return line
 end
