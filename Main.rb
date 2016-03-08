@@ -17,6 +17,7 @@ post '/' do
     line = checkRuby(line)
     line = checkReturn(line)
     line = checkNewPage(line)
+    line = checkSharp(line)
 
     line << "\n"
 
@@ -47,6 +48,7 @@ post '/html' do
     line = checkRuby(line)
     line = checkReturn(line)
     line = checkNewPage(line)
+    line = checkSharp(line)
 
     line << "\n"
 
@@ -59,6 +61,7 @@ post '/html' do
 
 end
 
+#形式段落
 def checkSpace(line)
   if line.match(/^[ \s]/) then
     line = "<p>" + line + "</p>"
@@ -66,6 +69,15 @@ def checkSpace(line)
   return line
 end
 
+#意味段落
+def checkReturn(line)
+  if line == "" then
+    line = "</div>\n<div>"
+  end
+  return line
+end
+
+#ルビ
 def checkRuby(line)
   s = line.force_encoding("UTF-8").scan(/[\|｜].*?[\(（].*?[\)）]/)
   s.each do |text|
@@ -82,16 +94,25 @@ def checkRuby(line)
   return line
 end
 
-def checkReturn(line)
-  if line == "" then
-    line = "</div>\n<div>"
+#改ページ
+def checkNewPage(line)
+  if line.force_encoding("UTF-8").match(/^[-ー=＝]{3,}$/) then
+    line = "\n</div>\n</div>\n<div class=\"page\">\n<div>\n"
   end
   return line
 end
 
-def checkNewPage(line)
-  if line.force_encoding("UTF-8").match(/^[-ー=＝]{3,}$/) then
-    line = "\n</div>\n</div>\n<div class=\"page\">\n<div>\n"
+#見出し
+def checkSharp(line)
+  if (md = line.match(/^[#＃]*/).to_s) != ""
+    count = md.length
+    if count > 6
+      count = 6
+    end
+
+    line.sub!(/^[#＃]*/, "")
+    line = "<h#{count}>#{line}</h#{count}>"
+
   end
   return line
 end
