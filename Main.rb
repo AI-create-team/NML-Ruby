@@ -53,6 +53,7 @@ def checkLine(line)
   line = checkSharp(line)
   line = checkStrikethrough(line)
   line = checkItalic(line)
+  line = checkBold(line)
   return line
 end
 
@@ -126,7 +127,20 @@ end
 def checkItalic(line)
   s = line.force_encoding("UTF-8").scan(/[\_＿]{1}.*?[\_＿]{1}/)
   s.each do |text|
-    ss = "<i>#{text[1,text.length - 2]}</i>"
+    if text != "__"
+      ss = "<i>#{text[1,text.length - 2]}</i>"
+      line.gsub!(text, ss)
+    end
+
+  end
+  return line
+end
+
+#太字
+def checkBold(line)
+  s = line.force_encoding("UTF-8").scan(/[\_＿]{2}.*?[\_＿]{2}/)
+  s.each do |text|
+    ss = "<b>#{text[2,text.length - 4]}</b>"
     line.gsub!(text, ss)
   end
   return line
