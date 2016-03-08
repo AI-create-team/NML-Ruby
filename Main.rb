@@ -13,15 +13,7 @@ post '/' do
   s = String.new
 
   spstr.each do |line|
-    line = checkSpace(line)
-    line = checkRuby(line)
-    line = checkReturn(line)
-    line = checkNewPage(line)
-    line = checkSharp(line)
-
-    line << "\n"
-
-    s << line
+    s << checkLine(line) << "\n"
   end
 
   s = "<div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div>"
@@ -44,21 +36,23 @@ post '/html' do
   s = String.new
 
   spstr.each do |line|
-    line = checkSpace(line)
-    line = checkRuby(line)
-    line = checkReturn(line)
-    line = checkNewPage(line)
-    line = checkSharp(line)
-
-    line << "\n"
-
-    s << line
+    s << checkLine(line) << "\n"
   end
 
   s = "<html lang=\"ja\"><head><title>NNML</title></head><body><div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div></body></html>"
 
   return s
 
+end
+
+def checkLine(line)
+  line = checkSpace(line)
+  line = checkRuby(line)
+  line = checkReturn(line)
+  line = checkNewPage(line)
+  line = checkSharp(line)
+  line = checkStrikethrough(line)
+  return line
 end
 
 #形式段落
@@ -113,6 +107,16 @@ def checkSharp(line)
     line.sub!(/^[#＃]*/, "")
     line = "<h#{count}>#{line}</h#{count}>"
 
+  end
+  return line
+end
+
+#打ち消し線
+def checkStrikethrough(line)
+  s = line.force_encoding("UTF-8").scan(/[\~〜]{2}.*?[\~〜]{2}/)
+  s.each do |text|
+    ss = "<s>#{text[2,text.length - 4]}</s>"
+    line.gsub!(text, ss)
   end
   return line
 end
