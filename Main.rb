@@ -55,6 +55,7 @@ def checkLine(line)
   line = checkItalic(line)
   line = checkBold(line)
   line = checkBlockquotes(line)
+  line = checkLink(line)
   return line
 end
 
@@ -141,8 +142,7 @@ end
 def checkBold(line)
   s = line.force_encoding("UTF-8").scan(/[\_＿]{2}.*?[\_＿]{2}/)
   s.each do |text|
-    ss = "<b>#{text[2,text.length - 4]}</b>"
-    line.gsub!(text, ss)
+    line.gsub!(text, "<b>#{text[2,text.length - 4]}</b>")
   end
   return line
 end
@@ -151,6 +151,25 @@ end
 def checkBlockquotes(line)
   if line.match(/^[>＞]/) then
     line = "<blockquote>" + line[1,line.length] + "</blockquote>"
+  end
+  return line
+end
+
+#リンク
+def checkLink(line)
+  s = line.force_encoding("UTF-8").scan(/\[.*?\][\(（].*?[\)）]/)
+  s.each do |text|
+    if text.match(/\".*\"/) then
+      #""に該当
+      linkText = line.match(/\[.*?\]/).to_s
+      url = line.match(/[\(（].*?[\"]/).to_s
+      name = line.match(/[\"].*?[\"]/).to_s
+      line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\" title=\"#{name[1,name.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
+    else
+      linkText = line.match(/\[.*?\]/).to_s
+      url = line.match(/[\(（].*?[\)）]/).to_s
+      line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
+    end
   end
   return line
 end
