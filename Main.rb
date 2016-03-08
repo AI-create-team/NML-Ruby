@@ -52,6 +52,7 @@ def checkLine(line)
   line = checkNewPage(line)
   line = checkSharp(line)
   line = checkStrikethrough(line)
+  line = checkItalic(line)
   return line
 end
 
@@ -116,6 +117,16 @@ def checkStrikethrough(line)
   s = line.force_encoding("UTF-8").scan(/[\~〜]{2}.*?[\~〜]{2}/)
   s.each do |text|
     ss = "<s>#{text[2,text.length - 4]}</s>"
+    line.gsub!(text, ss)
+  end
+  return line
+end
+
+#斜体
+def checkItalic(line)
+  s = line.force_encoding("UTF-8").scan(/[\_＿]{1}.*?[\_＿]{1}/)
+  s.each do |text|
+    ss = "<i>#{text[1,text.length - 2]}</i>"
     line.gsub!(text, ss)
   end
   return line
