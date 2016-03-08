@@ -5,45 +5,54 @@ if development?
   Sinatra.register Sinatra::Reloader
 end
 
+#/にpostされたときの処理
 post '/' do
 
-  body = request.body.read
-  spstr = body.split("\n")
+  body = request.body.read #postされたテキストをbody変数に
+  spstr = body.split("\n") #配列spstrにbodyを改行で分割したものを入れる
 
-  s = String.new
+  s = String.new #返すテキストを保存するためのstring変数
 
-  spstr.each do |line|
+  spstr.each do |line| #foreachで一行ごとに処理をかけていく
     s << checkLine(line) << "\n"
+
+    # 上の一行は
+    # s = s + checkLine(line) + "\n"
+    # と同じ意味
   end
 
-  s = "<div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div>"
+  s = "<div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div>" #最後に整形
 
-  return s
+  return s #post元に返却
 
 end
 
+#/htmlにpostされたときの処理
 post '/html' do
 
-  body = request.body.read
+  body = request.body.read #postされたテキストをbody変数に
 
-
-  if body.match(/^zxcv=/) then
-    body = body[5,body.length]
-    body = URI.unescape(body)
-    body.gsub!("+"," ")
+  if body.match(/^zxcv=/) then # bodyの最初がzxcv=なら（webからのpostのため。zxcv=はformの名前。意味は無い。）
+    body = body[5,body.length] # zxcv=を削除する
+    body = URI.unescape(body) # URLエンコードをデコードする
+    body.gsub!("+"," ") # +を空白に変換する
   end
 
-  spstr = body.split("\n")
+  spstr = body.split("\n") #配列spstrにbodyを改行で分割したものを入れる
 
-  s = String.new
+  s = String.new #返すテキストを保存するためのstring変数
 
-  spstr.each do |line|
+  spstr.each do |line|#foreachで一行ごとに処理をかけていく
     s << checkLine(line) << "\n"
+
+    # 上の一行は
+    # s = s + checkLine(line) + "\n"
+    # と同じ意味
   end
 
-  s = "<html lang=\"ja\"><head><title>NNML</title></head><body><div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div></body></html>"
+  s = "<html lang=\"ja\"><head><title>NNML</title></head><body><div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div></body></html>" #最後に整形
 
-  return s
+  return s #post元に返却
 
 end
 
