@@ -25,10 +25,12 @@ end
 post '/html' do
 
   body = request.body.read
-  body = URI.unescape(body)
+
 
   if body.match(/^zxcv=/) then
     body = body[5,body.length]
+    body = URI.unescape(body)
+    body.gsub!("+"," ")
   end
 
   spstr = body.split("\n")
