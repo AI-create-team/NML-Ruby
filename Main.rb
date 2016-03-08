@@ -56,17 +56,18 @@ post '/html' do
 
 end
 
+#実際に処理をかけるメソッド
 def checkLine(line)
-  line = checkSpace(line)
-  line = checkRuby(line)
-  line = checkReturn(line)
-  line = checkNewPage(line)
-  line = checkSharp(line)
-  line = checkStrikethrough(line)
-  line = checkItalic(line)
-  line = checkBold(line)
-  line = checkBlockquotes(line)
-  line = checkLink(line)
+  line = checkSpace(line) #[形式段落] 行の最初が空白かどうか
+  line = checkRuby(line) #[ルビ] |hoge(fuga)という形式かどうか
+  line = checkReturn(line) #[意味段落] 空行かどうか
+  line = checkNewPage(line) #[改ページ] -または=が3つ以上のみの行かどうか
+  line = checkSharp(line) #[見出し] 最初が#でいくつあるか
+  line = checkStrikethrough(line) # [打ち消し線] ~で囲まれているか
+  line = checkItalic(line) #[斜体] _で囲まれているか
+  line = checkBold(line) #[太字] __で囲まれているか
+  line = checkBlockquotes(line) #[引用] 行の最初が>かどうか
+  line = checkLink(line) #[リンク/画像] [hoge](fuga)という形式かどうか また、最初に!があるか
   return line
 end
 
