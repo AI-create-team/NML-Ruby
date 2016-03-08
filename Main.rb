@@ -1,50 +1,43 @@
 require 'sinatra'
 require 'uri'
+require 'cgi'
 if development?
   require 'sinatra/reloader'
   Sinatra.register Sinatra::Reloader
 end
 
 post '/' do
+  s = ''
 
-  body = request.body.read
-  spstr = body.split("\n")
-
-  s = String.new
-
-  spstr.each do |line|
+  body = request.body.read.force_encoding('UTF-8').split("\n")
+  body.each do |line|
     s << checkLine(line) << "\n"
   end
 
-  s = "<div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div>"
-
-  return s
-
+  s = "<div class=\"page\"><div>#{s[0, s.length - 1]}</div></div>"
+  return CGI.pretty(s)
 end
 
 post '/html' do
+  bodyText = request.body.read.force_encoding('UTF-8')
 
-  body = request.body.read
-
-
-  if body.match(/^zxcv=/) then
-    body = body[5,body.length]
-    body = URI.unescape(body)
-    body.gsub!("+"," ")
+  if bodyText =~ /^zxcv=/
+    bodyText = bodyText[5, bodyText.length]
+    bodyText = URI.unescape(bodyText)
+    bodyText.tr!('+', ' ')
   end
 
-  spstr = body.split("\n")
+  body = bodyText.split("\n")
 
-  s = String.new
+  s = ''
 
-  spstr.each do |line|
+  body.each do |line|
     s << checkLine(line) << "\n"
   end
 
-  s = "<html lang=\"ja\"><head><title>NNML</title></head><body><div class=\"page\"><div>\n" + s[0,s.length - 1] + "\n</div></div></body></html>"
+  s = "<html lang=\"ja\"><head><title>NNML</title></head><body><div class=\"page\"><div>#{s[0, s.length - 1]}</div></div></body></html>"
 
-  return s
-
+  return CGI.pretty(s)
 end
 
 def checkLine(line)
@@ -58,136 +51,119 @@ def checkLine(line)
   line = checkBold(line)
   line = checkBlockquotes(line)
   line = checkLink(line)
-  return line
+  line
 end
 
-#形式段落
+# 形式段落
 def checkSpace(line)
-  if line.match(/^[ \s]/) then
-    line = "<p>" + line + "</p>"
-  end
-  return line
+  line = "<p>#{line}</p>" if line =~ /^[ \s]/
+  line
 end
 
-#意味段落
+# 意味段落
 def checkReturn(line)
-  if line == "" then
-    line = "</div>\n<div>"
-  end
-  return line
+  line = '</div><div>' if line == ''
+  line
 end
 
-#ルビ
+# ルビ
 def checkRuby(line)
-  s = line.force_encoding("UTF-8").scan(/[\|｜].*?[\(（].*?[\)）]/)
+  s = line.scan(/[\|｜].*?[\(（].*?[\)）]/)
   s.each do |text|
     moji = text[/[\|｜].*?[\(（]/]
-    moji = moji[1,moji.length-2]
+    moji = moji[1, moji.length - 2]
 
     ruby = text[/[\(（].*?[\)）]/]
-    ruby = ruby[1,ruby.length-2]
+    ruby = ruby[1, ruby.length - 2]
 
-    s = "<ruby>" + moji + "<rt>" + ruby + "</rt></ruby>"
-
-    line.gsub!(text, s)
+    line.gsub!(text, "<ruby>#{moji}<rt>#{ruby}</rt></ruby>")
   end
-  return line
+  line
 end
 
-#改ページ
+# 改ページ
 def checkNewPage(line)
-  if line.force_encoding("UTF-8").match(/^[-ー=＝]{3,}$/) then
-    line = "\n</div>\n</div>\n<div class=\"page\">\n<div>\n"
-  end
-  return line
+  line = '</div></div><div class="page"><div>' if line =~ /^[-ー=＝]{3,}$/
+  line
 end
 
-#見出し
+# 見出し
 def checkSharp(line)
-  if (md = line.match(/^[#＃]*/).to_s) != ""
-    count = md.length
-    if count > 6
-      count = 6
-    end
+  if (md = line.match(/^[#＃]*/).to_s) != ''
 
-    line.sub!(/^[#＃]*/, "")
+    count = md.length > 6 ? 6 : md.length
+
+    line.sub!(/^[#＃]*/, '')
     line = "<h#{count}>#{line}</h#{count}>"
 
   end
-  return line
+  line
 end
 
-#打ち消し線
+# 打ち消し線
 def checkStrikethrough(line)
-  s = line.force_encoding("UTF-8").scan(/[\~〜]{2}.*?[\~〜]{2}/)
+  s = line.scan(/[\~〜]{2}.*?[\~〜]{2}/)
   s.each do |text|
-    ss = "<s>#{text[2,text.length - 4]}</s>"
-    line.gsub!(text, ss)
+    line.gsub!(text, "<s>#{text[2, text.length - 4]}</s>")
   end
-  return line
+  line
 end
 
-#斜体
+# 斜体
 def checkItalic(line)
-  s = line.force_encoding("UTF-8").scan(/[\_＿*＊]{1}.*?[\_＿*＊]{1}/)
+  s = line.scan(/[\_＿*＊]{1}.*?[\_＿*＊]{1}/)
   s.each do |text|
-    if text != "__"
-      ss = "<i>#{text[1,text.length - 2]}</i>"
-      line.gsub!(text, ss)
-    end
-
+    line.gsub!(text, "<i>#{text[1, text.length - 2]}</i>") unless text == '__'
   end
-  return line
+  line
 end
 
-#太字
+# 太字
 def checkBold(line)
-  s = line.force_encoding("UTF-8").scan(/[\_＿*＊]{2}.*?[\_＿*＊]{2}/)
+  s = line.scan(/[\_＿*＊]{2}.*?[\_＿*＊]{2}/)
   s.each do |text|
-    line.gsub!(text, "<b>#{text[2,text.length - 4]}</b>")
+    line.gsub!(text, "<b>#{text[2, text.length - 4]}</b>")
   end
-  return line
+  line
 end
 
-#引用 (複数行にまたがるときの挙動が今一つ)
+# 引用 (複数行にまたがるときの挙動が今一つ)
 def checkBlockquotes(line)
-  if line.match(/^[>＞]/) then
-    line = "<blockquote>" + line[1,line.length] + "</blockquote>"
+  if line =~ /^[>＞]/
+    line = '<blockquote>' + line[1, line.length] + '</blockquote>'
   end
-  return line
+  line
 end
 
-#リンク
+# リンク
 def checkLink(line)
-  s = line.force_encoding("UTF-8").scan(/[!！]*\[.*?\][\(（].*?[\)）]/)
+  s = line.scan(/[!！]*\[.*?\][\(（].*?[\)）]/)
   s.each do |text|
-
-    if text.match(/[!！]{1,}\[.*?\][\(（].*?[\)）]/) then
-      if text.match(/\".*\"/) then
-        #""に該当
-        linkText = line.match(/\[.*?\]/).to_s.gsub(" ", "")
-        url = line.match(/[\(（].*?[\"]/).to_s.gsub(" ", "")
-        name = line.match(/[\"].*?[\"]/).to_s.gsub(" ", "")
-        line.gsub!(text, "<img src=\"#{url[1,url.length-2]}\" alt=\"#{linkText[1,linkText.length-2]}\" title=\"#{name[1,name.length-2]}\">")
+    if text =~ /[!！]{1,}\[.*?\][\(（].*?[\)）]/
+      if text =~ /\".*\"/
+        # ""に該当
+        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        url = line.match(/[\(（].*?[\"]/).to_s.delete(' ')
+        name = line.match(/[\"].*?[\"]/).to_s.delete(' ')
+        line.gsub!(text, "<img src=\"#{url[1, url.length - 2]}\" alt=\"#{linkText[1, linkText.length - 2]}\" title=\"#{name[1, name.length - 2]}\">")
       else
-        linkText = line.match(/\[.*?\]/).to_s.gsub(" ", "")
-        url = line.match(/[\(（].*?[\)）]/).to_s.gsub(" ", "")
-        line.gsub!(text, "<img src=\"#{url[1,url.length-2]}\" alt=\"#{linkText[1,linkText.length-2]}\" >")
+        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        url = line.match(/[\(（].*?[\)）]/).to_s.delete(' ')
+        line.gsub!(text, "<img src=\"#{url[1, url.length - 2]}\" alt=\"#{linkText[1, linkText.length - 2]}\" >")
       end
-    else#画像じゃないければ
-      if text.match(/\".*\"/) then
-        #""に該当
-        linkText = line.match(/\[.*?\]/).to_s.gsub(" ", "")
-        url = line.match(/[\(（].*?[\"]/).to_s.gsub(" ", "")
-        name = line.match(/[\"].*?[\"]/).to_s.gsub(" ", "")
-        line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\" title=\"#{name[1,name.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
+    else # 画像じゃないければ
+      if text =~ /\".*\"/
+        # ""に該当
+        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        url = line.match(/[\(（].*?[\"]/).to_s.delete(' ')
+        name = line.match(/[\"].*?[\"]/).to_s.delete(' ')
+        line.gsub!(text, "<a href=\"#{url[1, url.length - 2]}\" title=\"#{name[1, name.length - 2]}\">#{linkText[1, linkText.length - 2]}</a>")
       else
-        linkText = line.match(/\[.*?\]/).to_s.gsub(" ", "")
-        url = line.match(/[\(（].*?[\)）]/).to_s.gsub(" ", "")
-        line.gsub!(text, "<a href=\"#{url[1,url.length-2]}\">#{linkText[1,linkText.length-2]}</a>")
+        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        url = line.match(/[\(（].*?[\)）]/).to_s.delete(' ')
+        line.gsub!(text, "<a href=\"#{url[1, url.length - 2]}\">#{linkText[1, linkText.length - 2]}</a>")
       end
     end
-
   end
-  return line
+  line
 end
