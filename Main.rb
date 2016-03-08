@@ -54,6 +54,7 @@ def checkLine(line)
   line = checkStrikethrough(line)
   line = checkItalic(line)
   line = checkBold(line)
+  line = checkBlockquotes(line)
   return line
 end
 
@@ -142,6 +143,14 @@ def checkBold(line)
   s.each do |text|
     ss = "<b>#{text[2,text.length - 4]}</b>"
     line.gsub!(text, ss)
+  end
+  return line
+end
+
+#引用 (複数行にまたがるときの挙動が今一つ)
+def checkBlockquotes(line)
+  if line.match(/^[>＞]/) then
+    line = "<blockquote>" + line[1,line.length] + "</blockquote>"
   end
   return line
 end
