@@ -115,7 +115,7 @@ end
 def checkItalic(line)
   s = line.scan(/[\_＿*＊]{1}.*?[\_＿*＊]{1}/)
   s.each do |text|
-    line.gsub!(text, "<i>#{text[1, text.length - 2]}</i>") unless text == '__'
+    line.gsub!(text, "<i>#{text[1, text.length - 2]}</i>") unless text == '__' || text == '＿＿'
   end
   line
 end
@@ -132,36 +132,36 @@ end
 # 引用 (複数行にまたがるときの挙動が今一つ)
 def checkBlockquotes(line)
   if line =~ /^[>＞]/
-    line = '<blockquote>' + line[1, line.length] + '</blockquote>'
+    line = "<blockquote>#{line[1, line.length]}</blockquote>"
   end
   line
 end
 
-# リンク
+# リンク/画像
 def checkLink(line)
   s = line.scan(/[!！]*\[.*?\][\(（].*?[\)）]/)
   s.each do |text|
     if text =~ /[!！]{1,}\[.*?\][\(（].*?[\)）]/
       if text =~ /\".*\"/
         # ""に該当
-        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        linkText = line.match(/\[.*?\]/).to_s
         url = line.match(/[\(（].*?[\"]/).to_s.delete(' ')
-        name = line.match(/[\"].*?[\"]/).to_s.delete(' ')
+        name = line.match(/[\"].*?[\"]/).to_s
         line.gsub!(text, "<img src=\"#{url[1, url.length - 2]}\" alt=\"#{linkText[1, linkText.length - 2]}\" title=\"#{name[1, name.length - 2]}\">")
       else
-        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        linkText = line.match(/\[.*?\]/).to_s
         url = line.match(/[\(（].*?[\)）]/).to_s.delete(' ')
         line.gsub!(text, "<img src=\"#{url[1, url.length - 2]}\" alt=\"#{linkText[1, linkText.length - 2]}\" >")
       end
     else # 画像じゃないければ
       if text =~ /\".*\"/
         # ""に該当
-        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        linkText = line.match(/\[.*?\]/).to_s
         url = line.match(/[\(（].*?[\"]/).to_s.delete(' ')
-        name = line.match(/[\"].*?[\"]/).to_s.delete(' ')
+        name = line.match(/[\"].*?[\"]/).to_s
         line.gsub!(text, "<a href=\"#{url[1, url.length - 2]}\" title=\"#{name[1, name.length - 2]}\">#{linkText[1, linkText.length - 2]}</a>")
       else
-        linkText = line.match(/\[.*?\]/).to_s.delete(' ')
+        linkText = line.match(/\[.*?\]/).to_s
         url = line.match(/[\(（].*?[\)）]/).to_s.delete(' ')
         line.gsub!(text, "<a href=\"#{url[1, url.length - 2]}\">#{linkText[1, linkText.length - 2]}</a>")
       end
@@ -172,7 +172,7 @@ end
 
 #数字区切り
 def checkPunctuationNumber(line)
-  if (md = line.match(/^[0-9]+.$/).to_s) != ''
+  if line =~ /^[0-9]+\.$/
     line = "<hr class=\"number\">"
   end
   line
@@ -180,7 +180,7 @@ end
 
 #記号区切り
 def checkPunctuationSymbol(line)
-  if (md = line.match(/^[-*ー＊]+.$/).to_s) != ''
+  if line =~ /^[-*ー＊]+\.$/
     line = "<hr class=\"symbol\">"
   end
   line
