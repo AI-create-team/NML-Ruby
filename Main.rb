@@ -10,7 +10,7 @@ post '/' do
   s = ''
 
   bodyText = request.body.read.force_encoding('UTF-8')
-  bodyText.gsub!(/(\r\n|\r|\n)/, '\\\\n')
+  bodyText = bodyText.gsub(/(\r\n|\r|\n)/, '\n')
   body = bodyText.split("\n")
 
   body.each do |line|
@@ -30,7 +30,7 @@ post '/html' do
     bodyText.tr!('+', ' ')
   end
 
-  bodyText.gsub!(/(\r\n|\r|\n)/, '\\\\n')
+  bodyText = bodyText.gsub(/(\r\n|\r|\n)/, '\n')
 
   body = bodyText.split("\n")
 
