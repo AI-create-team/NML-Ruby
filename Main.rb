@@ -11,6 +11,7 @@ post '/' do
 
   body = request.body.read.force_encoding('UTF-8').split("\n")
   body.each do |line|
+    line.gsub!("\n","")
     s << checkLine(line) << "\n"
   end
 
