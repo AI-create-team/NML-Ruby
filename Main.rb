@@ -51,6 +51,8 @@ def checkLine(line)
   line = checkBold(line)
   line = checkBlockquotes(line)
   line = checkLink(line)
+  line = checkPunctuationNumber(line)
+  line = checkPunctuationSymbol(line)
   line
 end
 
@@ -164,6 +166,22 @@ def checkLink(line)
         line.gsub!(text, "<a href=\"#{url[1, url.length - 2]}\">#{linkText[1, linkText.length - 2]}</a>")
       end
     end
+  end
+  line
+end
+
+#数字区切り
+def checkPunctuationNumber(line)
+  if (md = line.match(/^[0-9]+.$/).to_s) != ''
+    line = "<hr class=\"number\">"
+  end
+  line
+end
+
+#記号区切り
+def checkPunctuationSymbol(line)
+  if (md = line.match(/^[-*ー＊]+.$/).to_s) != ''
+    line = "<hr class=\"symbol\">"
   end
   line
 end
