@@ -23,13 +23,14 @@ end
 
 post '/html' do
   bodyText = request.body.read.force_encoding('UTF-8')
-  bodyText.gsub!(/(\r\n|\r|\n)/, '\\\\n')
 
   if bodyText =~ /^zxcv=/
     bodyText = bodyText[5, bodyText.length]
     bodyText = URI.unescape(bodyText)
     bodyText.tr!('+', ' ')
   end
+
+  bodyText.gsub!(/(\r\n|\r|\n)/, '\\\\n')
 
   body = bodyText.split("\n")
 
