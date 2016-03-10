@@ -9,9 +9,10 @@ end
 post '/' do
   s = ''
 
-  body = request.body.read.force_encoding('UTF-8')
-  body.gsub!(/(\r\n|\r|\n)/, '\\\\n')
-  body = body.split("\n")
+  bodyText = request.body.read.force_encoding('UTF-8')
+  bodyText.gsub!(/(\r\n|\r|\n)/, '\\\\n')
+  body = bodyText.split("\n")
+
   body.each do |line|
     s << checkLine(line) << "\n"
   end
@@ -22,6 +23,7 @@ end
 
 post '/html' do
   bodyText = request.body.read.force_encoding('UTF-8')
+  bodyText.gsub!(/(\r\n|\r|\n)/, '\\\\n')
 
   if bodyText =~ /^zxcv=/
     bodyText = bodyText[5, bodyText.length]
