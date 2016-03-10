@@ -146,7 +146,7 @@ def checkLink(line)
         # ""に該当
         linkText = line.match(/\[.*?\]/).to_s
         url = line.match(/[\(（].*?[\"]/).to_s.delete(' ')
-        name = line.match(/[\"].*?[\"]/).to_s
+        name = line.match(/[\"].*?[\"]/).to_s 
         line.gsub!(text, "<img src=\"#{url[1, url.length - 2]}\" alt=\"#{linkText[1, linkText.length - 2]}\" title=\"#{name[1, name.length - 2]}\">")
       else
         linkText = line.match(/\[.*?\]/).to_s
