@@ -9,9 +9,10 @@ end
 post '/' do
   s = ''
 
-  body = request.body.read.force_encoding('UTF-8').split("\n")
+  body = request.body.read.force_encoding('UTF-8')
+  body.gsub!(/(\r\n|\r|\n)/, '\\\\n')
+  body = body.split("\n")
   body.each do |line|
-    line.gsub!(/\r/,"")
     s << checkLine(line) << "\n"
   end
 
